@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import Map, { Source, Layer, type MapRef, type LayerProps } from 'react-map-gl/maplibre';
 import { bbox } from '@turf/turf';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
@@ -7,14 +7,12 @@ import './styles/App.css';
 import jsonData from './assets/data.json';
 import { makeGeoJSON, type CrashData } from './geo/makeGeoJSON';
 import { useAtom } from 'jotai';
-import { selectedPointAtom } from './state';
+import { selectedPointAtom, filterStateAtom } from './state';
 import { House } from 'lucide-react';
 import './styles/Map.css';
 
 const MAPTILER_STYLE_URI = import.meta.env.VITE_MAPTILER_STYLE_URI;
 const data = jsonData as unknown as CrashData[];
-const geojson = makeGeoJSON(data);
-const dataBounds = bbox(geojson);
 
 const clusterLayer: LayerProps = {
   id: 'clusters',
@@ -80,8 +78,56 @@ export default function Map__() {
 
   const mapRef = useRef<MapRef>(null);
   const [selectedPoint, setSelectedPoint] = useAtom(selectedPointAtom);
+  const [filters] = useAtom(filterStateAtom);
   const [cursor, setCursor] = useState<string>('grab');
   const [showHomeButton, setShowHomeButton] = useState<boolean>(false);
+
+  // Filter data based on state
+  const filteredGeoJSON = useMemo(() => {
+    const filteredData = data.filter(d => {
+      // Filter by Municipality
+      if (filters.municipality !== 'All' && d.Municipality !== filters.municipality) {
+        return false;
+      }
+      // Filter by Severity
+      if (filters.severity === 'Deaths' && !d.hasDeaths) return false;
+      if (filters.severity === 'Injuries' && !d.hasInjuries) return false;
+
+      // Filter by Date
+      if (filters.startDate || filters.endDate) {
+        const crashDate = d["Date (DD/MM/YY)"] as string; // Format is YYYY-MM-DD
+        if (filters.startDate && crashDate < filters.startDate) return false;
+        if (filters.endDate && crashDate > filters.endDate) return false;
+      }
+
+      return true;
+    });
+    return makeGeoJSON(filteredData);
+  }, [filters]);
+
+  // Calculate bounds for filtered data
+  const dataBounds = useMemo(() => {
+    try {
+      return bbox(filteredGeoJSON);
+    } catch (e) {
+      console.error("Error calculating bbox", e);
+      return null;
+    }
+  }, [filteredGeoJSON]);
+
+  // Fit bounds when filters change
+  useEffect(() => {
+    if (mapRef.current && dataBounds) {
+      // Check if bounds are valid (not all zeros or Infinity)
+      const isValid = dataBounds.every(n => isFinite(n));
+      if (isValid) {
+        mapRef.current.fitBounds(dataBounds as [number, number, number, number], {
+          padding: { top: 100, bottom: 100, left: 100, right: 100 },
+          duration: 1000
+        });
+      }
+    }
+  }, [dataBounds]);
 
   useEffect(() => {
     console.log('Selected Point changed:', selectedPoint);
@@ -92,7 +138,7 @@ export default function Map__() {
 
   function resetBounds() {
     setShowHomeButton(false);
-    if (mapRef.current) {
+    if (mapRef.current && dataBounds) {
       mapRef.current.fitBounds(dataBounds as [number, number, number, number], {
         padding: {
           top: 100, bottom: 100, left: 100, right: 100
@@ -122,7 +168,7 @@ export default function Map__() {
       center: [longitude, latitude],
       duration: 500,
       padding: {
-        left: 0,
+        left: 400, // Offset for sidebar
       }
     });
   }
@@ -151,7 +197,7 @@ export default function Map__() {
   }
 
   return (
-    <div style={{ flex: 1, display: 'flex' }}>
+    <div style={{ flex: 1, display: 'flex', height: '100%' }}>
       <Map
         attributionControl={false}
         ref={mapRef}
@@ -167,18 +213,19 @@ export default function Map__() {
         onMouseEnter={() => setCursor('pointer')}
         onMouseLeave={() => setCursor('grab')}
         onLoad={e => {
-          e.target.fitBounds(dataBounds as [number, number, number, number], {
-            padding: {
-              top: 100, bottom: 100, left: 100, right: 100
-            }, duration: 1000
-          });
+          if (dataBounds) {
+            e.target.fitBounds(dataBounds as [number, number, number, number], {
+              padding: { top: 100, bottom: 100, left: 100, right: 100 },
+              duration: 1000
+            });
+          }
         }}
         onClick={onClickMap}
       >
         <Source
           id="crashes"
           type="geojson"
-          data={geojson}
+          data={filteredGeoJSON}
           cluster={true}
           clusterMaxZoom={14}
           clusterRadius={50}
