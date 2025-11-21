@@ -243,7 +243,10 @@ export default function Map__() {
         </Source>
       </Map>
       {showHomeButton && (
-        <span className='circle-button float-bottom-right' onClick={resetBounds} title="Reset View">
+        <span className='circle-button float-bottom-right' onClick={() => {
+          resetBounds();
+          setSelectedPoint(null);
+        }} title="Reset View">
           <House color="white" size={30} strokeWidth={2} />
         </span>
       )}
