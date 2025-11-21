@@ -1,0 +1,26 @@
+.circle-button {
+    all: unset;
+    background-color: var(--brand-color);
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+}
+
+.circle-button:hover {
+    background-color: #e50028;
+}
+
+.circle-button:active {
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+}
+
+.float-bottom-right {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+}   
