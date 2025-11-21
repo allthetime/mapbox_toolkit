@@ -1,12 +1,33 @@
 import { useAtom } from 'jotai';
+import { useState, useEffect } from 'react';
 import { selectedPointAtom } from '../state';
 import { X, MapPin, Calendar, AlertTriangle } from 'lucide-react';
 import '../styles/DetailsSidebar.css';
 
 export default function DetailsSidebar() {
     const [selectedPoint, setSelectedPoint] = useAtom(selectedPointAtom);
+    const [displayPoint, setDisplayPoint] = useState<any>(null);
+    const [isOpen, setIsOpen] = useState(false);
 
-    if (!selectedPoint) return null;
+    useEffect(() => {
+        if (selectedPoint) {
+            setDisplayPoint(selectedPoint);
+            // Small timeout to ensure render happens before class addition for animation
+            requestAnimationFrame(() => {
+                setIsOpen(true);
+            });
+        } else {
+            setIsOpen(false);
+            // Wait for animation to finish before clearing content
+            // Matching the 0.4s transition time in CSS
+            const timer = setTimeout(() => {
+                setDisplayPoint(null);
+            }, 400);
+            return () => clearTimeout(timer);
+        }
+    }, [selectedPoint]);
+
+    if (!displayPoint) return null;
 
     const closeSidebar = () => setSelectedPoint(null);
 
@@ -20,13 +41,13 @@ export default function DetailsSidebar() {
         "Date (DD/MM/YY)": date,
         "Deaths": deaths,
         "Injuries": injuries
-    } = selectedPoint as any;
+    } = displayPoint;
 
     const hasPhoto = photoLink && photoLink !== 'n/a';
     const cleanDescription = (description as string)?.replace(/^\*?\s*(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d+\s+\d+:\s*/i, '');
 
     return (
-        <div className={`details-sidebar ${selectedPoint ? 'open' : ''}`}>
+        <div className={`details-sidebar ${isOpen ? 'open' : ''}`}>
             <span className="close-btn" onClick={closeSidebar}>
                 <X size={24} color="red" />
             </span>
@@ -81,7 +102,7 @@ export default function DetailsSidebar() {
 
                 <div className="raw-data-section">
                     <h3>Raw Data</h3>
-                    <pre>{JSON.stringify(selectedPoint, null, 2)}</pre>
+                    <pre>{JSON.stringify(displayPoint, null, 2)}</pre>
                 </div>
 
             </div>

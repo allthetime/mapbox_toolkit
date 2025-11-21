@@ -8,7 +8,8 @@
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
     z-index: 20;
     transform: translateX(-100%);
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.4s step-end;
+    visibility: hidden;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -16,6 +17,8 @@
 
 .details-sidebar.open {
     transform: translateX(0);
+    visibility: visible;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s step-start;
 }
 
 .close-btn {
@@ -173,4 +176,25 @@
     font-size: 11px;
     overflow-x: auto;
     color: #444;
+}
+
+@media (max-width: 768px) {
+    .details-sidebar {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: auto;
+        max-height: 80vh;
+        transform: translateY(100%);
+        border-radius: 16px 16px 0 0;
+        box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.4s step-end;
+    }
+
+    .details-sidebar.open {
+        transform: translateY(0);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s step-start;
+    }
 }

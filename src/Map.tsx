@@ -7,7 +7,7 @@ import './styles/App.css';
 import jsonData from './assets/data.json';
 import { makeGeoJSON, type CrashData } from './geo/makeGeoJSON';
 import { useAtom } from 'jotai';
-import { selectedPointAtom, filterStateAtom } from './state';
+import { selectedPointAtom, filterStateAtom, mobileSearchExpandedAtom } from './state';
 import { House } from 'lucide-react';
 import './styles/Map.css';
 
@@ -79,6 +79,7 @@ export default function Map__() {
   const mapRef = useRef<MapRef>(null);
   const [selectedPoint, setSelectedPoint] = useAtom(selectedPointAtom);
   const [filters] = useAtom(filterStateAtom);
+  const [, setMobileSearchExpanded] = useAtom(mobileSearchExpandedAtom);
   const [cursor, setCursor] = useState<string>('grab');
   const [showHomeButton, setShowHomeButton] = useState<boolean>(false);
 
@@ -138,6 +139,7 @@ export default function Map__() {
 
   function resetBounds() {
     setShowHomeButton(false);
+    setMobileSearchExpanded(false);
     if (mapRef.current && dataBounds) {
       mapRef.current.fitBounds(dataBounds as [number, number, number, number], {
         padding: {
@@ -154,8 +156,9 @@ export default function Map__() {
       source.getClusterExpansionZoom(clusterId).then((zoom) => {
         mapRef.current?.easeTo({
           center: coordinates,
-          zoom: zoom * 1.2,
-          duration: 500
+          zoom: zoom * 1.1,
+          duration: 500,
+          padding: { bottom: 100, top: 100, left: 100, right: 100 }
         });
       }).catch((err) => {
         console.error('Error getting cluster expansion zoom:', err);
@@ -164,17 +167,20 @@ export default function Map__() {
   }
 
   function setMapCenter(longitude: number, latitude: number) {
+    const isMobile = window.innerWidth <= 768;
     mapRef.current?.easeTo({
       center: [longitude, latitude],
       duration: 500,
       padding: {
-        left: 400, // Offset for sidebar
+        left: isMobile ? 0 : 400, // Offset for sidebar on desktop
+        bottom: isMobile ? 300 : 0, // Offset for sidebar on mobile (approx height)
       }
     });
   }
 
   function onClickMap(e: MapLayerMouseEvent) {
     setShowHomeButton(true);
+    setMobileSearchExpanded(false);
     if (e.features && e.features[0]) {
       const feature = e.features[0];
       const properties = feature.properties;
@@ -221,6 +227,7 @@ export default function Map__() {
           }
         }}
         onClick={onClickMap}
+        onMoveStart={() => setMobileSearchExpanded(false)}
       >
         <Source
           id="crashes"

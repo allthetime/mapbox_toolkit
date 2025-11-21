@@ -18,3 +18,5 @@ export const filterStateAtom = atom<FilterState>({
 });
 
 export const searchQueryAtom = atom<string>('');
+
+export const mobileSearchExpandedAtom = atom<boolean>(false);

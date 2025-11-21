@@ -19,16 +19,14 @@
 
 .search-bar-container.compact {
   top: 20px;
-  left: 420px;
+  /* Keep left at 50% to avoid animating left property */
+  left: 50%;
+  /* Calculate position: Target Left (420px) - Current Left (50vw) */
+  transform: translateX(calc(420px - 50vw));
   /* Sidebar width + padding */
   width: calc(100% - 440px);
   max-width: 600px;
-  /* Keep it wide enough for filters */
-  transform: none;
   padding: 8px 12px;
-  /* Optional: scale it down slightly if "get smaller" implies visual scale */
-  /* transform: scale(0.9); */
-  /* transform-origin: top left; */
 }
 
 .search-input-wrapper {
@@ -152,4 +150,48 @@
   background: #f5f5f5;
   color: #333;
   border-color: #ccc;
+}
+
+@media (max-width: 768px) {
+  .search-bar-container {
+    left: 16px;
+    right: 16px;
+    width: auto;
+    max-width: none;
+    transform: none;
+    top: 16px;
+  }
+
+  .search-bar-container.compact {
+    left: 16px;
+    width: auto;
+    top: 16px;
+    transform: none;
+  }
+
+  .search-bar-container.mobile-expanded {
+    z-index: 30;
+  }
+
+  .filter-controls {
+    flex-direction: column;
+  }
+
+  .filter-select,
+  .date-input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .date-filters {
+    flex-direction: column;
+  }
+
+  .filter-toggles {
+    width: 100%;
+  }
+
+  .filter-btn {
+    flex: 1;
+  }
 }
