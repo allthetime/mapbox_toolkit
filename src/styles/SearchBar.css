@@ -60,8 +60,8 @@
 }
 
 .filters-wrapper {
-  overflow: hidden;
-  max-height: 200px;
+  /* overflow: hidden;
+  max-height: 200px; */
   opacity: 1;
   transition: all 0.3s ease;
 }
