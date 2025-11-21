@@ -45,7 +45,7 @@ export default function SearchBar() {
                 boost: {
                     'Intersection or street block': 3,
                     'Municipality': 2,
-                    'VZ Tweet Description ( * = Corrected/Edited)': 1
+                    'VZ Tweet Description ( * = Corrected/Edited)': 2
                 },
                 prefix: true,
                 fuzzy: 0.2
@@ -107,7 +107,7 @@ export default function SearchBar() {
     // But if we are searching, we probably want it expanded.
 
     const isCompact = !!selectedPoint;
-    const placeholderText = isMobile && !mobileExpanded ? "Search & Filter" : "Search locations...";
+    const placeholderText = isMobile && !mobileExpanded ? "Search & Filter" : "Search Locations & Details...";
 
     const handleInteraction = () => {
         if (isMobile) {

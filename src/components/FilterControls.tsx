@@ -67,7 +67,7 @@ export default function FilterControls() {
 
             {isModified && (
                 <span className="reset-btn" onClick={resetFilters} title="Reset Filters">
-                    <RotateCcw size={16} />
+                    <RotateCcw size={16} color="white" strokeWidth={2} />
                 </span>
             )}
         </div>

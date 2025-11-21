@@ -139,8 +139,8 @@
   height: 36px;
   border-radius: 50%;
   border: 1px solid #ddd;
-  background: #fff;
-  color: #666;
+  background: var(--brand-color);
+  color: white;
   cursor: pointer;
   transition: all 0.2s ease;
   margin-left: auto;
